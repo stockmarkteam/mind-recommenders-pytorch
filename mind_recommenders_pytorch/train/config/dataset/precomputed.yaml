@@ -1,0 +1,13 @@
+train:
+  _target_: mind_recommenders_pytorch.train.data.dataset.MindTrainDataset
+  n_negatives: ${hparams.n_negatives}
+  article_attributes: ${hparams.article_attributes}
+  max_history_length: ${hparams.max_history_length}
+  article_input_converter:
+    _target_: mind_recommenders_pytorch.train.data.article_input_converter.precomputed.ArticleInputConverter
+valid:
+  _target_: mind_recommenders_pytorch.train.data.dataset.MindValidationDataset
+  article_attributes: ${hparams.article_attributes}
+  max_history_length: ${hparams.max_history_length}
+  article_input_converter:
+    _target_: mind_recommenders_pytorch.train.data.article_input_converter.precomputed.ArticleInputConverter

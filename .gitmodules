@@ -1,0 +1,3 @@
+[submodule "MIND"]
+	path = MIND
+	url = git@github.com:msnews/MIND.git

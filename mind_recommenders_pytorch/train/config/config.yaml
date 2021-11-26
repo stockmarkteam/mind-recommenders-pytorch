@@ -1,0 +1,86 @@
+defaults:
+  - model: nrms
+  - embedding_layer: word_embedding
+  - hparams_model: ${model}
+  - hparams_embedding: ${embedding_layer}
+  - optim: ${embedding_layer}
+  - data_path: ${embedding_layer}
+  - dataset: ${embedding_layer}
+  - deterministic: disabled
+  - optional debug_run: disabled
+  - _self_
+default_choices: ${hydra:runtime.choices}
+dataset_type: small
+num_workers: 4
+data_path:
+  train:
+    samples: ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/train/behaviors.pkl
+    articles:  ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/train/articles.pkl
+  valid:
+    samples: ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/valid/behaviors.pkl
+    articles:  ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/valid/articles.pkl
+  category: ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/categories.txt
+  subcategory: ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/subcategories.txt
+hparams:
+  # value of ${default_choices} becomes invalid under multiran setting (hydra v1.1):  https://github.com/facebookresearch/hydra/issues/1882
+  model: ${default_choices.model}
+  embedding_layer: ${default_choices.embedding_layer}
+  article_attributes:
+    - title
+    - body
+    - category
+    - subcategory
+  embedding_dim: 400
+  attn_hidden_dim: 200
+  category_hidden_dim: 100
+  p_dropout: 0.2
+  n_categories: ${line_count:${data_path.category}}
+  n_subcategories: ${line_count:${data_path.subcategory}}
+  data_shuffle_seed: 0
+  train_seed: 0
+  n_negatives: 4
+  n_epochs: 3
+  max_history_length: 50
+  optim: ${optim}
+data_loader:
+  train:
+    _target_: torch.utils.data.DataLoader
+    batch_size: ${hparams.batch_size.train}
+    shuffle: True
+    num_workers: ${num_workers}
+    collate_fn:
+      _target_: mind_recommenders_pytorch.train.data.input_collator.InputCollator
+  valid:
+    _target_: torch.utils.data.DataLoader
+    batch_size: ${hparams.batch_size.valid}
+    shuffle: False
+    num_workers: ${num_workers}
+    collate_fn:
+      _target_: mind_recommenders_pytorch.train.data.input_collator.InputCollator
+pl_model:
+  _target_: mind_recommenders_pytorch.train.pl_model.PlModel
+trainer:
+  _target_: pytorch_lightning.Trainer
+  default_root_dir: "./"
+  max_epochs: ${hparams.n_epochs}
+  gpus: 
+    - 0
+  detect_anomaly: False
+  precision: ${hparams.precision}
+  callbacks:
+    - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+      monitor: val_auc
+      filename: '{epoch:04d}-{step:04d}-{val_auc:.3f}'
+      save_top_k: 10
+  logger:
+    _target_: pytorch_lightning.loggers.TensorBoardLogger
+    save_dir: ${trainer.default_root_dir} 
+    name: train_logs
+
+
+hydra:
+  run:
+    dir: ./logs/${hydra.job.override_dirname}
+  sweep:
+    dir: ./logs/
+    subdir: ${hydra.job.override_dirname}

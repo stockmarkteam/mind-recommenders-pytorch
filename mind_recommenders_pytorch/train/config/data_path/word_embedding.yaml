@@ -1,0 +1,7 @@
+# define embedding specific data path
+train:
+  precomputed_articles: ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/train/article_inputs_word_embedding.pkl
+valid:
+  precomputed_articles: ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/valid/article_inputs_word_embedding.pkl
+embedding: ${oc.env:WORKDIR}/dataset//mind/${dataset_type}/processed/embeddings.npy
+vocab: ${oc.env:WORKDIR}/dataset/mind/${dataset_type}/processed/vocab.txt

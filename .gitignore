@@ -1,0 +1,10 @@
+**/*.pyc
+**/ipynb_checkpoints
+**/*checkpoint.ipynb
+.venv
+/dataset
+/logs
+/models
+/*.log
+/.env
+*.zip

@@ -1,0 +1,11 @@
+# @package hparams
+transformer_trainable_layers: 2
+max_title_length: 30
+max_body_length: 128
+# use smaller bath size to avoid MomoryAllocationError
+batch_size:
+  train: 4
+  valid: 4
+accumulate_grad_batches: 32
+learning_rate: 1e-5
+precision: 16

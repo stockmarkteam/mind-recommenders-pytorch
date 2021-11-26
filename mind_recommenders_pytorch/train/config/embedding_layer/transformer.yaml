@@ -1,0 +1,6 @@
+_target_: mind_recommenders_pytorch.train.models.layers.token_embedding_layer.transformer_based.TransformerBasedTokenEmbeddingLayer
+model_path: 
+  _target_: hydra.utils.to_absolute_path
+  path: ${data_path.model}
+p_dropout: ${hparams.p_dropout}
+n_trainable_layers: ${hparams.transformer_trainable_layers}

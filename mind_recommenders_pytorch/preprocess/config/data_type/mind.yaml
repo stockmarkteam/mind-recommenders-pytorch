@@ -1,0 +1,100 @@
+params:
+  dataset_type: small
+  target_data_categories: 
+    - train
+    - valid
+  # parameter for precmpute article input
+  max_title_length: 30
+  max_body_length: 128
+data_path:
+  train_zip: ${oc.env:WORKDIR}/MINDsmall_train.zip
+  valid_zip: ${oc.env:WORKDIR}/MINDsmall_dev.zip
+  raw_data: ${oc.env:WORKDIR}/dataset/mind/${params.dataset_type}/raw/
+  processed_data: ${oc.env:WORKDIR}/dataset/mind/${params.dataset_type}/processed/
+  glove: ${oc.env:WORKDIR}/models/glove/glove.840B.300d.txt
+  # parameter for precompute article input for transformer based model
+  transformer_model: ${oc.env:WORKDIR}/models/transformers/bert-base-uncased
+target_jobs:
+  - preprocess_behavior
+  - preprocess_article
+  - reindex_article
+  - preprocess_article_category
+  - preprocess_glove
+job_definitions:
+  decompress_dataset:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.decompress_dataset.decompress_dataset
+    train_zip: ${data_path.train_zip}
+    valid_zip: ${data_path.valid_zip}
+    output_dir: ${data_path.raw_data}
+    dataset_type: ${params.dataset_type}
+  download_article_body:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.download_article_body.download_article_body
+    raw_data_dir: ${data_path.raw_data}
+    data_categories: ${params.target_data_categories}
+  preprocess_behavior:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.preprocess_behavior.BehaviorPreprocessor.run
+    raw_data_dir: ${data_path.raw_data}
+    processed_data_dir: ${data_path.processed_data}
+    data_categories: ${params.target_data_categories}
+  preprocess_article:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.preprocess_article.ArticlePreprocessor.run
+    raw_data_dir: ${data_path.raw_data}
+    processed_data_dir: ${data_path.processed_data}
+    data_categories: ${params.target_data_categories}
+  reindex_article:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.reindex_article.ArticleReindexer.run
+    processed_data_dir: ${data_path.processed_data}
+    data_categories: ${params.target_data_categories}
+  preprocess_article_category:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.preprocess_article_category.preprocess_article_category
+    processed_data_dir: ${data_path.processed_data}
+    data_categories: ${params.target_data_categories}
+  preprocess_glove:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.preprocess_glove.GlovePreprocessor.run
+    glove_path: ${data_path.glove}
+    processed_data_dir: ${data_path.processed_data}
+    filter_vocab_by_articles: True
+    data_categories: ${params.target_data_categories}
+    text_attributes:
+      - title
+      - body
+    tokenizer: 
+      _target_: mind_recommenders_pytorch.train.data.article_input_converter.word_embedding_based.StanfordTokenizer
+  precompute_article_input_for_word_embedding:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.precompute_article_input.precompute_article_input
+    processed_data_dir: ${data_path.processed_data}
+    embedding_type: word_embedding
+    data_categories: ${params.target_data_categories}
+    parallel: True
+    precompute_attributes:
+      - title
+      - body
+      - category
+      - subcategory
+    article_input_converter:
+      _target_: mind_recommenders_pytorch.train.data.article_input_converter.word_embedding_based.ArticleInputConverter
+      max_title_length: ${params.max_title_length}
+      max_body_length: ${params.max_body_length}
+      category_file_path: ${data_path.processed_data}/categories.txt
+      subcategory_file_path: ${data_path.processed_data}/subcategories.txt
+      sentence_serializer:
+        _target_: mind_recommenders_pytorch.train.data.article_input_converter.word_embedding_based.StanfordSentenceSerializer
+        vocab_path: ${data_path.processed_data}/vocab.txt
+  precompute_article_input_for_transformer:
+    _target_: mind_recommenders_pytorch.preprocess.scripts.mind.precompute_article_input.precompute_article_input
+    processed_data_dir: ${data_path.processed_data}
+    embedding_type: transformer
+    data_categories: ${params.target_data_categories}
+    parallel: True
+    precompute_attributes:
+      - title
+      - body
+      - category
+      - subcategory
+    article_input_converter:
+      _target_: mind_recommenders_pytorch.train.data.article_input_converter.transformer_based.ArticleInputConverter
+      max_title_length: ${params.max_title_length}
+      max_body_length: ${params.max_body_length}
+      tokenizer_path: ${data_path.transformer_model}
+      category_file_path: ${data_path.processed_data}/categories.txt
+      subcategory_file_path: ${data_path.processed_data}/subcategories.txt

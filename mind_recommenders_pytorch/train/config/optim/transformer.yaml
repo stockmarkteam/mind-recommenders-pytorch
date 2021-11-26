@@ -1,0 +1,3 @@
+_target_: torch.optim.Adam
+lr: ${hparams.learning_rate}
+params: trainable_params

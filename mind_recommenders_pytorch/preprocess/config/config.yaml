@@ -1,0 +1,10 @@
+defaults:
+  - data_type@_global_: mind
+  - _self_
+# disable hydra logging
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+hydra/job_logging: stdout
+hydra/hydra_logging: none

@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+		"ms-python.python",
+		"ms-python.vscode-pylance",
+		"eamodio.gitlens",
+		"njpwerner.autodocstring",
+		"timonwong.shellcheck",
+		"foxundermoon.shell-format"
+	]
+}

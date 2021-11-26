@@ -1,0 +1,58 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[scripts]
+jupyter = "jupyter lab --allow-root --ip 0.0.0.0 --port ${JUPYTER_PORT}"
+tensorboard = "tensorboard --logdir ${WORKDIR}/logs/  --bind_all --port ${TENSORBOARD_PORT}"
+launch-corenlp-server = "bash -c 'cd models/stanford-corenlp-4.3.1 && java -mx4g -cp \"*\" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -preload tokenize,ssplit -status_port 9000 -port 9000 -timeout 300000 -maxCharLength 10000000 -quiet &'"
+shutdown-corenlp-server = "bash -c 'kill $(pgrep -a java | grep StanfordCoreNLPServer | cut -d \" \" -f1)'"
+
+# preprocess
+preprocess = "pipenv run python3 -m mind_recommenders_pytorch.preprocess.main"
+preprocess-all="bash -c 'pipenv run decompress-dataset; pipenv run download-all; pipenv run launch-corenlp-server; pipenv run preprocess-dataset; pipenv run preprocess-glove; pipenv run precompute-article-input'"
+
+decompress-dataset = "pipenv run preprocess target_jobs=[decompress_dataset]"
+
+# download 
+download-all = "bash -c 'pipenv run download-article-body; pipenv run download-models'"
+download-article-body = "pipenv run preprocess target_jobs=[download_article_body]"
+download-models = "bash -c 'pipenv run download-glove; pipenv run download-bert; pipenv run download-corenlp'"
+download-glove = "sh scripts/download_glove.sh"
+download-bert = "pipenv run python3 scripts/download_transformer_model.py 'bert-base-uncased'"
+download-corenlp = "sh scripts/download_corenlp.sh"
+
+# preprocess
+preprocess-glove = "pipenv run preprocess target_jobs=[preprocess_glove]"
+preprocess-dataset = "pipenv run preprocess target_jobs=[preprocess_behavior,preprocess_article,reindex_article,preprocess_article_category]"
+
+# precompute article inputs
+precompute-article-input= "pipenv run preprocess target_jobs=[precompute_article_input_for_word_embedding,precompute_article_input_for_transformer]"
+
+# train
+train = "pipenv run python3 -m mind_recommenders_pytorch.train.main"
+train-all = "pipenv run train -m dataset=precomputed model=naml,nrms embedding_layer=word_embedding,transformer  hparams.article_attributes=[title],[title,body],[title,body,category,subcategory]"
+
+[packages]
+pandas = "*"
+numpy = "*"
+pyarrow = "*"
+tqdm = "*"
+sklearn = "*"
+scrapy = "*"
+pandarallel = "*"
+torch = "*"
+pytorch-lightning = "*"
+hydra-core = "*"
+transformers = "*"
+jupyterlab = "*"
+nltk = "*"
+
+[dev-packages]
+isort = "*"
+flake8 = "*"
+black = "==21.10b0"
+
+[requires]
+python_version = "3.8"

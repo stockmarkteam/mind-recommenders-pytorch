@@ -1,0 +1,3 @@
+# @package trainer
+benchmark: True
+deterministic: False

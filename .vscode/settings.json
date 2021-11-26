@@ -1,0 +1,45 @@
+{
+    "[python]": {
+        "editor.tabSize": 4,
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": false,
+        "editor.formatOnType": false,
+        "editor.insertSpaces": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+    },
+    "python.pythonPath": ".venv/bin/python",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--max-line-length=120",
+        "--ignore E203",
+    ],
+    "python.formatting.blackArgs": [
+        "--line-length=120"
+    ],
+    "python.linting.enabled": true,
+    "python.formatting.provider": "black",
+    "python.terminal.activateEnvironment": true, // activate pipenv on starting shell
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 500,
+    "files.watcherExclude": {
+        "**/.git": true,
+        "**/.ipynb_checkpoints": true,
+        "**/.venv": true,
+        "**/__pycache__": true,
+        "dataset": true,
+        "models": true,
+        "logs": true,
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.ipynb_checkpoints": true,
+        "**/__pycache__": true,
+    },
+    "remote.SSH.localServerDownload": "always", // cache extension locally and send it on starting container; for speedup
+    "remote.autoForwardPorts":false,
+    "workbench.list.openMode": "doubleClick",
+    "terminal.integrated.tabs.enabled":false,
+}

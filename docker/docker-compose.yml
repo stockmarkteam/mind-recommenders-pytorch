@@ -1,0 +1,24 @@
+version: "3"
+services:
+  app:
+    image: mind-recommenders-pytorch
+    container_name: mind-recommenders-pytorch
+    tty: true
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+      target: ${BUILD_TARGET:-non-root}
+      args:
+        UID: ${UID}
+    volumes: 
+      - ../:/root/mind-recommenders-pytorch/
+      - ~/.ssh:/root/.ssh:ro
+      - ~/.gitconfig:/root/.gitconfig:ro
+      - ${DATASET_PATH}:/root/mind-recommenders-pytorch/dataset
+      - ${LOG_PATH}:/root/mind-recommenders-pytorch/logs
+      - ${MODEL_PATH}:/root/mind-recommenders-pytorch/models
+      - ${VENV_PATH}:/root/mind-recommenders-pytorch/.venv
+    ports:
+      - ${JUPYTER_PORT}:${JUPYTER_PORT}
+      - ${TENSORBOARD_PORT}:${TENSORBOARD_PORT}
+    ipc: host  # share shm with host

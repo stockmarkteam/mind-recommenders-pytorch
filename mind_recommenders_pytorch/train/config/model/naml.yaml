@@ -1,0 +1,18 @@
+_target_: mind_recommenders_pytorch.train.models.news_recommendation_model.NewsRecommendationModel
+news_encoder:
+  _target_: mind_recommenders_pytorch.train.models.naml.naml_news_encoder.NamlNewsEncoder
+  token_embedding_layer: ${embedding_layer}
+  article_attributes: ${hparams.article_attributes}
+  output_dim: ${hparams.embedding_dim}
+  attn_hidden_dim: ${hparams.attn_hidden_dim}
+  category_embedding_dim: ${hparams.category_hidden_dim}
+  kernel_size: ${hparams.kernel_size}
+  attention_dropout: ${hparams.p_dropout}
+  n_categories: ${hparams.n_categories}
+  n_subcategories: ${hparams.n_subcategories}
+user_encoder:
+  _target_:  mind_recommenders_pytorch.train.models.naml.naml_user_encoder.NamlUserEncoder
+  embedding_dim: ${hparams.embedding_dim}
+  attn_hidden_dim: ${hparams.attn_hidden_dim}
+  p_dropout: ${hparams.p_dropout}
+  max_history_length: ${hparams.max_history_length}

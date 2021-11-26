@@ -1,0 +1,23 @@
+train:
+  _target_: mind_recommenders_pytorch.train.data.dataset.MindTrainDataset
+  n_negatives: ${hparams.n_negatives}
+  article_attributes: ${hparams.article_attributes}
+  max_history_length: ${hparams.max_history_length}
+  article_input_converter:
+    _target_: mind_recommenders_pytorch.train.data.article_input_converter.transformer_based.ArticleInputConverter
+    max_title_length: ${hparams.max_title_length}
+    max_body_length: ${hparams.max_body_length}
+    tokenizer_path: ${data_path.model}
+    category_file_path: ${data_path.category}
+    subcategory_file_path: ${data_path.subcategory}
+valid:
+  _target_: mind_recommenders_pytorch.train.data.dataset.MindValidationDataset
+  article_attributes: ${hparams.article_attributes}
+  max_history_length: ${hparams.max_history_length}
+  article_input_converter:
+    _target_: mind_recommenders_pytorch.train.data.article_input_converter.transformer_based.ArticleInputConverter
+    max_title_length: ${hparams.max_title_length}
+    max_body_length: ${hparams.max_body_length}
+    tokenizer_path: ${data_path.model}
+    category_file_path: ${data_path.category}
+    subcategory_file_path: ${data_path.subcategory}

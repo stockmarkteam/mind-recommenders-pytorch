@@ -1,0 +1,6 @@
+- _target_: torch.optim.Adam
+  lr: ${hparams.learning_rate}
+  params: dense_params
+- _target_: torch.optim.SparseAdam
+  lr: ${hparams.learning_rate}
+  params: sparse_params

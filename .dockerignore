@@ -1,0 +1,5 @@
+/.venv
+/dataset
+/logs
+/models
+*.zip

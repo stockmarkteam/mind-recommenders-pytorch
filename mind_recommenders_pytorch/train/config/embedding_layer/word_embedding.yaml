@@ -1,0 +1,3 @@
+_target_: mind_recommenders_pytorch.train.models.layers.token_embedding_layer.word_embedding_based.WordEmbeddingBasedTokenEmbeddingLayer
+embedding_path: ${data_path.embedding}
+p_dropout: ${hparams.p_dropout}

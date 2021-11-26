@@ -1,0 +1,4 @@
+# @package trainer
+# batch sizeの調整等を行う際にenabledにする設定
+limit_train_batches: 20
+limit_val_batches: 20
