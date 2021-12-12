@@ -55,7 +55,7 @@ make sh
 ## 前処理
 コンテナ内で以下のコマンドを実行することにより、必要な前処理が全て行われます。
 ```bash
-pipenv install preprocess-all data_path.train_zip=<MINDxxx_train.zipのpath> data_path.valid_zip=<MINDxxx_dev.zipへのpath>
+pipenv run preprocess-all data_path.train_zip=<MINDxxx_train.zipのpath> data_path.valid_zip=<MINDxxx_dev.zipへのpath>
 ```
 通常版データセットを利用する場合は、上記コマンドの引数に`params.dataset_type=large`を追加してください。
 
