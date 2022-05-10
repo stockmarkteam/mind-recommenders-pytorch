@@ -13,5 +13,4 @@ def init_random_seed(seed=0):
 
 def register_omegaconf_resolvers():
     # line_count:
-    #   ファイルの行数を数える（ファイル名が空ならNoneを返す）　カテゴリ数を数える際に利用
     OmegaConf.register_new_resolver("line_count", lambda fname: None if fname is None else sum([1 for _ in open(fname)]))

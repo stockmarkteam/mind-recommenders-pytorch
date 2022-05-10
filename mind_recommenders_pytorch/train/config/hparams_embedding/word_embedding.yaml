@@ -2,8 +2,8 @@
 max_title_length: 30
 max_body_length: 128
 batch_size:
-  train: 8
-  valid: 12
+  train: 1
+  valid: 1
 accumulate_grad_batches: 16
-learning_rate: 4e-4
+learning_rate: 1e-4
 precision: 16

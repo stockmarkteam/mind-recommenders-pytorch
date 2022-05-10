@@ -10,13 +10,13 @@ from .evaluation.evaluation_result_writer import EvaluationResultWriter
 from .evaluation.evaluator import Evaluator
 from .evaluation.inference_result_aggregator import InferenceResultAggregator
 from .evaluation.inferencer import Inferencer
-from .pseudo_softmax_ce_with_logits_loss import PseudoSoftmaxCEWithLogitsLoss
+from .models.layers.multi_triplet_loss import MultiTripletLoss
 
 class PlModel(pl.LightningModule):
     def __init__(self, conf):
         super().__init__()
         self.model = instantiate(conf.model)
-        self.loss_func = PseudoSoftmaxCEWithLogitsLoss()
+        self.loss_func = MultiTripletLoss()
         self.save_hyperparameters(dict(conf.hparams))
         self.automatic_optimization = False
 
@@ -26,7 +26,9 @@ class PlModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         candidates, n_candidates_per_sample, targets, histories = batch
         out = self.forward(candidates, histories, n_candidates_per_sample)
-        loss = self.loss_func.to(out.device)(out, targets, n_candidates_per_sample)
+        if out == None: return
+
+        loss = self.loss_func(out, targets, n_candidates_per_sample)
 
         self.log("train_loss", loss, prog_bar=True)
         self.manual_backward(loss/self.hparams.accumulate_grad_batches)
@@ -64,9 +66,6 @@ class PlModel(pl.LightningModule):
         EvaluationResultWriter(self, phase_name).run(result)
 
     def configure_optimizers(self):
-        """
-        configの指定に従いoptimizerを初期化。この際、各optimizerのparamsはPlModelのattributeをstrで指定する必要がある
-        """
         if isinstance(self.hparams.optim, Sequence):
             return [hydra.utils.instantiate(conf, params=getattr(self, conf.params)) for conf in self.hparams.optim]
         else:
@@ -85,12 +84,6 @@ class PlModel(pl.LightningModule):
         return self._separate_sparse_and_dense_params()[1]
 
     def _separate_sparse_and_dense_params(self):
-        """
-        以下2つのパラメータを分離する
-        ・sparse=Trueのtorch.nn.Embeddingに付随するparameter（sprase parameter）
-        ・その他のparameter（dense parameter）
-        NOTE: is_sparse=Trueのtorch.nn.Parameterは分離の考慮に入れていない（dense parameter扱いになる）
-        """
         param_to_name = {param: name for name, param in self.named_parameters()}
         sparse_params = list(
             chain.from_iterable(

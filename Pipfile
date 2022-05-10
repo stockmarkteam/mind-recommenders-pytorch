@@ -48,6 +48,7 @@ hydra-core = "*"
 transformers = "*"
 jupyterlab = "*"
 nltk = "*"
+perceiver-io-pytorch = {path = "./libs/perceiver-io"}
 
 [dev-packages]
 isort = "*"

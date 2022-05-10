@@ -1,5 +1,5 @@
 defaults:
-  - model: nrms
+  - model: perceiver_io
   - embedding_layer: word_embedding
   - hparams_model: ${model}
   - hparams_embedding: ${embedding_layer}
@@ -30,10 +30,13 @@ hparams:
     - body
     - category
     - subcategory
+
+  #for NRMS, NAML
   embedding_dim: 400
   attn_hidden_dim: 200
   category_hidden_dim: 100
   p_dropout: 0.2
+
   n_categories: ${line_count:${data_path.category}}
   n_subcategories: ${line_count:${data_path.subcategory}}
   data_shuffle_seed: 0

@@ -1,0 +1,10 @@
+# @package hparams
+num_heads: 8
+num_latents: 500
+latent_dim: 32
+num_self_attn_per_block: 2
+num_blocks: 2
+decoder_query_dim: 500
+word_pos_emb: True
+seq_pos_emb: False
+feat_type_emb: True
