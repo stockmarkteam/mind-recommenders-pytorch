@@ -1,0 +1,14 @@
+LICENSE
+README.md
+setup.py
+src/perceiver_io/__init__.py
+src/perceiver_io/attention.py
+src/perceiver_io/decoders.py
+src/perceiver_io/encoder.py
+src/perceiver_io/perceiver.py
+src/perceiver_io/positional_encoding.py
+src/perceiver_io_pytorch.egg-info/PKG-INFO
+src/perceiver_io_pytorch.egg-info/SOURCES.txt
+src/perceiver_io_pytorch.egg-info/dependency_links.txt
+src/perceiver_io_pytorch.egg-info/requires.txt
+src/perceiver_io_pytorch.egg-info/top_level.txt
