@@ -1,106 +1,108 @@
-# mind-recommenders-pytorch
-MINDデータセットを利用して、ニュース推薦モデル（[NAML](https://www.ijcai.org/proceedings/2019/536), [NRMS](https://aclanthology.org/D19-1671/)）をカスタマイズしつつ学習するためのコード群が置かれています。
+# Perceiver IO Recommender
+This repository includes a sample implementation of Perceiver-IO recommender for a news recommendation task on MIND dataset, along with [NAML](https://www.ijcai.org/proceedings/2019/536) and [NRMS](https://aclanthology.org/D19-1671/) baseline implementations.
 
+## System Requirements
+This code can be run from Docker on Linux environment. We confirmed that it runs under below environment.
 
-## 動作環境
-linux上のdockerで動作させる想定です。以下の環境で動作確認済みです。
-
-* linux (Ubuntu 20.04 LTS)
-* docker: version 20.10.6, build 370c289
+* Linux (Ubuntu 20.04 LTS)
+* Docker: version 20.10.6, build 370c289
 * docker-compose: 1.29.1, build c34c88b2
 * nvidia-container-toolkit: 1.5.1-1 amd64
 * GPU: NVIDIA GeForce RTX 2080 Ti 
 
 
-## セットアップ
-### 1. リポジトリのclone
+## Setting up
+### 1. Clone the repository branch
 ```
-git clone --recursive https://github.com/stockmarkteam/mind-recommenders-pytorch
+git clone --branch perceiver_io_recommender --recursive https://github.com/stockmarkteam/mind-recommenders-pytorch.git
 ```
-### 2. `.env`の作成
+**IMPORTANT NOTE:** Please be sure that you are cloning and working on perceiver_io_recommender branch. Main branch does not contain perceiver-io implementation
+### 2. Setup environment parameters
+
+Environment parameters need to be written in `.env` file. You can simply copy it from `.env.sample` to work with default parameters.
+
 ```
-mv mind-recommenders-pytorch
+cd mind-recommenders-pytorch
 cp .env.sample .env
 ```
-`.env`に定義された環境変数は以下のとおりです。必要に応じて変更可能ですが、以降の説明はデフォルト設定を前提として行われます。
+
+These are the necessary parameters written in `.env` file, you can edit it if necessary.
+
 * `COMPOSE_PROJECT_NAME`:
-    * docker-composeの環境変数。詳細は[こちら](https://docs.docker.com/compose/reference/envvars/#compose_project_name)。
-* `DEVICE`（デフォルト値：`gpu`）: 
-    * dockerで利用するデバイスを指定します。`gpu, cpu`のうちいずれかを選択してください。一応切り替えができるようになっていますが、`cpu`設定での前処理/学習スクリプトの動作は未確認です。
-* `DATASET_PATH`（デフォルト値：`$(PWD)/dataset`）:
-    * mind datasetを保存するhostディレクトリ。container上では`dataset/`にmountされます。
-* `MODEL_PATH`（デフォルト値：`$(PWD)/models`）:
-    * GloVe, Transformerのpretrained modelを保存するhostディレクトリ。container上では`models/`にmountされます。
-* `LOG_PATH` （デフォルト値：`$(PWD)/logs`）:: 
-    * 学習のログを保存するhostディレクトリ。container上では`logs/`にmountされます。
+    * Needed for docker-compose. For details please [refer](https://docs.docker.com/compose/reference/envvars/#compose_project_name).
+* `DEVICE`（Default: `gpu`）: 
+    * Device setting for docker. Parameters can be set to `gpu` or `cpu`, but we tested the code only with `gpu` parameter.
+* `DATASET_PATH`Default: `$(PWD)/dataset`）:
+    * Host directory for MIND dataset. It is mounted to `dataset/` directory from the container.
+* `MODEL_PATH`（Default: `$(PWD)/models`）:
+    * Host directory for pretrained models for GloVe and Transformer. It is mounted to `models/` directory from the container.
+* `LOG_PATH` （Default: `$(PWD)/logs`）:
+    * Host directory for training logs. It is mounted to `logs/` folder from the container.
 * `VENV_PATH`:
-    * pythonの仮想環境をinstallするhostディレクトリ。container上では`.venv/`にmountされます。
-* `JUPYTER_PORT`:
-    * container上で立ち上げたjupyter notebookにhostOS上のブラウザからアクセスするためbindするportを指定します。（default:`8888`）
-* `TENSORBOARD_PORT`:
-    * container上で立ち上げたtensorboardにhostOS上のブラウザからアクセスするためbindするportを指定します。（default: `6006`）
-### 3. docker環境のsetup
+    * Host directory for python virtual environment. It is mounted `.venv/` folder from the container.
+* `JUPYTER_PORT`:（Default: `8888`）
+    * The port number binded for the host OS access to the jupyter notebook that is launched in the container.
+* `TENSORBOARD_PORT`: （Default: `6006`）
+    * The port number binded for the host OS access to the tensorboard that is launched in the container.
+
+### 3. Setup Docker Environment
 ```bash
 make setup
 ```
-### 4. データセットのDL
-[公式サイト](https://msnews.github.io/)から訓練データセット・開発データセットのzipファイルをDLして、containerから見える場所に配置してください。
-迷ったらこのREADMEと同じディレクトリに配置すれば問題ありません。
 
-### 5. containerに入る
+### 4. Download dataset
+
+Download [MIND dataset](https://msnews.github.io/) and put the zip file to a directory which is visible from the container. You can put it to the same folder with README.
+
+### 5. Enter the container
 ```bash
 make sh
 ```
 
-## 前処理
-コンテナ内で以下のコマンドを実行することにより、必要な前処理が全て行われます。
+## Preprocessing
+Run below command in container to do all necessary preprocessing.
 ```bash
-pipenv run preprocess-all data_path.train_zip=<MINDxxx_train.zipのpath> data_path.valid_zip=<MINDxxx_dev.zipへのpath>
+pipenv run preprocess-all data_path.train_zip=<path/to/MINDxxx_train.zip> data_path.valid_zip=<path/to/MINDxxx_dev.zip>
 ```
-通常版データセットを利用する場合は、上記コマンドの引数に`params.dataset_type=large`を追加してください。
+If you are working with the large dataset, please add this parameter to above command:
 
-ここで行われる各処理の概要ついては、[こちら](doc/preprocess.md)をご確認ください。
+`params.dataset_type=large`
 
-## 学習
-コンテナ内で以下のコマンドを実行することにより、モデルが学習できます。
+
+## Training
+Run below command in container for training the perceiver-io model.
 ```bash
 pipenv run train
 ```
 
-[当社のブログ記事](https://tech.stockmark.co.jp/blog/20211120_mind_discovery/)で言及した12通りのモデルをすべて学習したい場合は、以下のコマンドを実行してください。
-```bash
-pipenv run train-all
-```
+Some of the optional parameters are listed below.
 
-
-指定できるオプションの一例は以下のとおりです。
 * `model`: 
     * `naml` or `nrms` (default: `nrms`)
 * `embedding_layer`:
     *  `word_embedding` or `transformer` (default: word_embedding)
 * `hparams.article_attributes`:
-    *  利用する記事属性を`[title,body,category,subcategory]`から指定（default: `[title,body,category,subcategory]`)
+    *  Can be selected from [title,body,category,subcategory]（default: `[title,body,category,subcategory]`)
 * `hparams.n_epochs`: 
-    * 訓練のエポック数
+    * default: 3
 * `hparams.max_title_length`:
-    *  最大タイトルトークン長（default: `30`)
+    *  Max. number of tokens from article titles（default: `30`)
 * `hparams.max_body_length`:
-    *  最大本文トークン長（default: `128`）
+    *  Max. number of tokens from article bodies（default: `128`）
 * `hparams.batch_size.train`:
-    * train datasetのbatch size（default: 利用するembedding layerに応じて変化）
 * `hparams.batch_size.valid`:
-    * validation datasetのbatch size（default: 利用するembedding layerに応じて変化）
+    * (Default batch sizes are different depending on the selected embedding layer）
 * `hparams.accumulate_grad_batches`: 
-    * この数値と同じstep数が経過するたびに勾配を更新します。これにより実質的な訓練バッチサイズは`hparams.batch_size.train` * `hparams.accumulate_grad_batches`になります。
+    * Training batch size becomes `hparams.batch_size.train` * `hparams.accumulate_grad_batches`
 * `dataset`:
-    * `precomputed`を指定すると、事前にシリアライズされた記事を学習に用います。毎stepごとに行われる記事データのシリアライズ処理をスキップできるので、学習が高速化されます。
-* `num_workers`: 
-    * DataLoaderのworker数（default: `4`）
+    * If it is set to `precomputed`, it reads from serialized article text data hence fetching data during training can be speeded up.
+* `num_workers`:
+    * For dataLoader（default: `4`）
 
-本ライブラリではコマンドラインパーサとして[hydra](https://github.com/facebookresearch/hydra)を用いているため、[config](mind_recommenders_pytorch/train/config)で定義されている値は全てコマンドラインから書き換え可能になっています。
+This library uses [hydra](https://github.com/facebookresearch/hydra) as config manager and  everything in [config](mind_recommenders_pytorch/train/config) can be overwritten from the command line.
 
-## 学習結果の確認
+## Check training results
 ```
 pipenv run tensorboard
 ```
-host OS上のブラウザで`localhost:${TENSORBOARD_PORT}`にアクセスするとログが確認できます。
+You can browse results from this link `localhost:${TENSORBOARD_PORT}` in the host.
