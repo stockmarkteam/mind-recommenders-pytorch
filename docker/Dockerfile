@@ -5,6 +5,10 @@ ENV LC_ALL=C.UTF-8
 ### python builder
 ###-----------------------------------------------
 FROM base as python-builder
+
+###### --- add NVIDIA key ---
+RUN apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+
 ###### --- add repository for latest minor version of python 3.8 ---
 RUN apt update && apt install -y software-properties-common
 RUN add-apt-repository -y ppa:deadsnakes/ppa
